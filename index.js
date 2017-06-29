@@ -1,16 +1,24 @@
 // var OAuthServer = require('express-oauth-server');
 var express = require('express');
 var session = require('express-session');
-var path = require("path");
+var path = require('path');
 var passport = require('passport')
 var FacebookStrategy = require('passport-facebook').Strategy; 
 
 var app = express();
 
+var pub = __dirname;
+
+
 app.use(session({ secret: 'tets', resave: true, saveUninitialized: true }));
 
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(express.static(pub));
+// app.use(express.errorHandler());
+
+app.set('', __dirname);
+app.set('view engine', 'jade');
 
 passport.use(new FacebookStrategy({
 		clientID: '184238082108185',
@@ -18,8 +26,6 @@ passport.use(new FacebookStrategy({
 		callbackURL: 'http://localhost:3000/auth/facebook/callback',
   },
   function(accessToken, refreshToken, profile, done) {
-  	console.log('here');
-  	console.log(profile);
   	return done(null, profile);
   }
 ));
@@ -37,16 +43,17 @@ passport.deserializeUser(function(user, done) {
 
 
 app.get('/profile', function(req, res) {
-	console.log(req.user);
-   // res.sendFile(path.join(__dirname+'/profile.html'));
-   res.json(req.user);
+	res.render('profile', { data: req.user });
 });
 
-app.get('/main', function(req, res) {
+app.get('/', function(req, res) {
    res.sendFile(path.join(__dirname+'/main.html'));
 });
 
-
+app.get('/logout', function(req, res) {
+   req.logout();
+   res.redirect('/');
+});
 
 app.get('/auth/facebook/callback',
 	passport.authenticate('facebook', {
@@ -57,5 +64,5 @@ app.get('/auth/facebook/callback',
 
 
 app.listen(3000, function() {
-	console.log('YOY1O');
+	console.log('Server is running');
 });
